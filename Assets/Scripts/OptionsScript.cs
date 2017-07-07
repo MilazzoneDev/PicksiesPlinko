@@ -10,6 +10,7 @@ public class OptionsScript : MonoBehaviour {
 	public Vector3 viewPos;
 	public Vector3 upPos;
 	public Vector3 sidePos;
+
 	[Header("Cam Rotations")]
 	public Vector3 normalRot;
 	public Vector3 upRot;
@@ -21,14 +22,17 @@ public class OptionsScript : MonoBehaviour {
 	public GameObject InstructionsStart;
 	public GameObject InstructionsPlay;
 	public GameObject InstructionsBot;
+    public GameObject OtherSettings;
 
 	[Header("Settings")]
 	public Toggle chatToggle;
 	public Toggle optionsButtonToggle;
 	public Image chromaImage;
 	public InputField chromaInput;
+    public Slider spiOffsetSlider;
 
-	[Header("objects")]
+    [Header("objects")]
+    public GameObject SetupObject;
 	public GameObject optionsButton;
 	public GameObject launcher;
 	public Camera cam;
@@ -40,7 +44,7 @@ public class OptionsScript : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		CloseMenu(); //in case it's already open
-		HideInstructions();
+        HideOtherOptionsScreens();
 
 		ShowMenu();
 		ToggleChat();
@@ -277,13 +281,22 @@ public class OptionsScript : MonoBehaviour {
 		}
 	}
 
+    void ViewOtherSettings()
+    {
+        HideMenu(true);
+        if(OtherSettings != null)
+        {
+            OtherSettings.SetActive(true);
+        }
+    }
+
 	void HideInstructionsFromOptions()
 	{
-		HideInstructions ();
+        HideOtherOptionsScreens();
 		HideMenu (false);
 	}
 
-	void HideInstructions()
+	void HideOtherOptionsScreens()
 	{
 		if (InstructionsStart != null) 
 		{
@@ -297,6 +310,10 @@ public class OptionsScript : MonoBehaviour {
 		{
 			InstructionsBot.SetActive (false);
 		}
+        if (OtherSettings != null)
+        {
+            OtherSettings.SetActive(false);
+        }
 	}
 
 	void ChangeChroma()
@@ -316,5 +333,19 @@ public class OptionsScript : MonoBehaviour {
 		cam.backgroundColor = newColor;
 
 	}
+
+    void ChangeBoardType(bool drawAsCircle, bool drawAsSprial)
+    {
+
+    }
+
+    public void ChangeBoardSpiralOffset()
+    {
+        BoardSetupScript setupscript = SetupObject.GetComponents<BoardSetupScript>()[0];
+        if(setupscript != null && spiOffsetSlider != null)
+        {
+            setupscript.ChangeSpiOffset(spiOffsetSlider.value);
+        }
+    }
 
 }

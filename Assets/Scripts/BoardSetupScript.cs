@@ -64,9 +64,13 @@ public class BoardSetupScript : MonoBehaviour {
         if (drawAsCircle)
         {
             float maxArea = xBoardMax < yBoardMax ? xBoardMax + (xPadding / 2.0f) : yBoardMax + (yPadding / 2.0f);
+            Vector2 BoardMin = new Vector2(xBoardMin - (xPadding / 2.0f), yBoardMin - (yPadding / 2.0f));
+            Vector2 BoardMax = new Vector2(xBoardMax + (xPadding / 2.0f), yBoardMax + (yPadding / 2.0f));
 
-            for (int i = 0; i < cirSteps; i++) // add check for any new ones one screen to fill up the rest of the space?
+            bool hasAddedPoints = true;
+            for (int i = 0; i < cirSteps || hasAddedPoints; i++)
             {
+                hasAddedPoints = false;
                 for (int j = 0; i == 0 ? j < 1 : j < pegsPerStep*i; j++)
                 {
                     if (i == 0)
@@ -78,9 +82,10 @@ public class BoardSetupScript : MonoBehaviour {
                         float angle = (float)j * ((Mathf.PI * 2.0f) / ((float)i * pegsPerStep)) + ((float)i * cirOffset);
                         float newX = Mathf.Cos((float)angle) * ((float)i * (maxArea / (cirSteps - 1)));
                         float newY = Mathf.Sin((float)angle) * ((float)i * (maxArea / (cirSteps - 1)));
-                        if (i < cirSteps) // add check for on screen?
+                        if (i < cirSteps || IsPointInRectangle(newX, newY, BoardMin , BoardMax))
                         {
                             makePeg(new Vector3(newX, newY, 0) + Center);
+                            hasAddedPoints = true;
                         }
                     }
                 }
@@ -89,9 +94,13 @@ public class BoardSetupScript : MonoBehaviour {
         else if (drawAsSprial)
         {
             float maxArea = xBoardMax < yBoardMax ? xBoardMax + (xPadding / 2.0f) : yBoardMax + (yPadding / 2.0f);
-            
-            for(int i = 0; i < spiSteps; i++)
+            Vector2 BoardMin = new Vector2(xBoardMin - (xPadding / 2.0f), yBoardMin - (yPadding / 2.0f));
+            Vector2 BoardMax = new Vector2(xBoardMax + (xPadding / 2.0f), yBoardMax + (yPadding / 2.0f));
+
+            bool hasAddedPoints = true;
+            for (int i = 0; i < spiSteps || hasAddedPoints; i++)
             {
+                hasAddedPoints = false;
                 for(int j = 0; j < spiArms; j++)
                 {
                     if(i == 0)
@@ -104,7 +113,11 @@ public class BoardSetupScript : MonoBehaviour {
                         float angle = (float)j * ((Mathf.PI * 2.0f) / spiArms) + ((float)i * spiOffset);
                         float newX = Mathf.Cos((float)angle) * ((float)i * (maxArea / (spiSteps - 1)));
                         float newY = Mathf.Sin((float)angle) * ((float)i * (maxArea / (spiSteps - 1)));
-                        makePeg(new Vector3(newX, newY, 0) + Center);
+                        if (i < spiSteps || IsPointInRectangle(newX, newY, BoardMin, BoardMax))
+                        {
+                            makePeg(new Vector3(newX, newY, 0) + Center);
+                            hasAddedPoints = true;
+                        }
                     }
                 }
             }
@@ -154,5 +167,18 @@ public class BoardSetupScript : MonoBehaviour {
         float NewValue = (((OldValue - OldMin) * NewRange) / OldRange) + NewMin;
 
         return (NewValue);
+    }
+
+    public bool IsPointInRectangle(float x, float y, Vector2 min, Vector2 max)
+    {
+        return (x < max.x && x > min.x && y < max.y && y > min.y);
+    }
+
+
+    ///////////////////Board setup changes///////////////////////
+    public void ChangeSpiOffset(float newOffset)
+    {
+        spiOffset = newOffset;
+        initializeBoard();
     }
 }
