@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using UnityEngine.UI;
 
@@ -29,7 +30,37 @@ public class OptionsScript : MonoBehaviour {
 	public Toggle optionsButtonToggle;
 	public Image chromaImage;
 	public InputField chromaInput;
+
+    [Header("BoardOptionRadioButtons")]
+    public Toggle LinesBoardToggle;
+    public Toggle CircleBoardToggle;
+    public Toggle SpiralBoardToggle;
+
+    [Header("LinesBoardSliders")]
+    public GameObject LinesOptions;
+    public Slider lineRowsSlider;
+    public Slider lineColsSlider;
+    public Toggle lineAltToggle;
+    public InputField lineRowsText;
+    public InputField lineColsText;
+
+    [Header("SpiralBoardSliders")]
+    public GameObject SpiralOptions;
+    public Slider spiArmsSlider;
     public Slider spiOffsetSlider;
+    public Slider spiDensitySlider;
+    public InputField spiArmsText;
+    public InputField spiOffsetText;
+    public InputField spiDensityText;
+
+    [Header("CircleBoardSliders")]
+    public GameObject CircleOptions;
+    public Slider cirRingsSlider;
+    public Slider cirOffsetSlider;
+    public Slider cirDensitySlider;
+    public InputField cirRingsText;
+    public InputField cirOffsetText;
+    public InputField cirDensityText;
 
     [Header("objects")]
     public GameObject SetupObject;
@@ -39,6 +70,7 @@ public class OptionsScript : MonoBehaviour {
 
 	private bool optionsButtonActive;
 	private bool chatActive;
+    private bool shouldIgnoreOnChanged = false;
 
 
 	// Use this for initialization
@@ -53,7 +85,81 @@ public class OptionsScript : MonoBehaviour {
 		cam.transform.rotation = Quaternion.Euler(normalRot);
 		cam.clearFlags = CameraClearFlags.Color;
 		cam.backgroundColor = Color.black;
-	}
+
+
+
+
+        BoardSetupScript setupscript = SetupObject.GetComponents<BoardSetupScript>()[0];
+        if (setupscript != null)
+        {
+            shouldIgnoreOnChanged = true;
+            // board type
+            if (LinesBoardToggle != null && setupscript.drawAsCircle == false && setupscript.drawAsSprial == false)
+            {
+                LinesBoardToggle.isOn = setupscript.drawAsCircle == false && setupscript.drawAsSprial == false;
+            }
+            if (CircleBoardToggle != null && setupscript.drawAsCircle)
+            {
+                CircleBoardToggle.isOn = setupscript.drawAsCircle;
+            }
+            if (SpiralBoardToggle != null && setupscript.drawAsSprial)
+            {
+                CircleBoardToggle.isOn = setupscript.drawAsSprial;
+            }
+
+            // lines
+            if(lineRowsSlider != null && lineRowsText != null)
+            {
+                lineRowsSlider.value = setupscript.numRows;
+                lineRowsText.text = setupscript.numRows.ToString();
+            }
+            if(lineColsSlider != null && lineColsText != null)
+            {
+                lineColsSlider.value = setupscript.numCols;
+                lineColsText.text = setupscript.numCols.ToString();
+            }
+            if(lineAltToggle != null)
+            {
+                lineAltToggle.isOn = setupscript.alternatePegs;
+            }
+            
+            // spiral
+            if (spiArmsSlider != null && spiArmsText != null)
+            {
+                spiArmsSlider.value = setupscript.spiArms;
+                spiArmsText.text = setupscript.spiArms.ToString();
+            }
+            if (spiOffsetSlider != null && spiOffsetText != null)
+            {
+                spiOffsetSlider.value = setupscript.spiOffset;
+                spiOffsetText.text = setupscript.spiOffset.ToString();
+            }
+            if (spiDensitySlider != null && spiDensityText != null)
+            {
+                spiDensitySlider.value = setupscript.spiSteps;
+                spiDensityText.text = setupscript.spiSteps.ToString();
+            }
+
+            // circle
+            if (cirRingsSlider != null && cirRingsText != null)
+            {
+                cirRingsSlider.value = setupscript.cirRings;
+                cirRingsText.text = setupscript.cirRings.ToString();
+            }
+            if (cirOffsetSlider != null && cirOffsetText != null)
+            {
+                cirOffsetSlider.value = setupscript.cirOffset;
+                cirOffsetText.text = setupscript.cirOffset.ToString();
+            }
+            if (cirDensitySlider != null && cirDensityText != null)
+            {
+                cirDensitySlider.value = setupscript.cirRingDensity;
+                cirDensityText.text = setupscript.cirRingDensity.ToString();
+            }
+            shouldIgnoreOnChanged = false;
+            ChangeBoardType();
+        }
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -339,13 +445,171 @@ public class OptionsScript : MonoBehaviour {
 
     }
 
-    public void ChangeBoardSpiralOffset()
+
+    // ------------------Spiral change events------------------
+    public void ChangeBoardType()
     {
         BoardSetupScript setupscript = SetupObject.GetComponents<BoardSetupScript>()[0];
-        if(setupscript != null && spiOffsetSlider != null)
+
+        if (setupscript == null || shouldIgnoreOnChanged) { return; }
+        if (LinesOptions != null) { LinesOptions.SetActive(false); }
+        if (CircleOptions != null) { CircleOptions.SetActive(false); }
+        if (SpiralOptions != null) { SpiralOptions.SetActive(false); }
+
+        if (LinesBoardToggle && LinesBoardToggle.isOn)
         {
-            setupscript.ChangeSpiOffset(spiOffsetSlider.value);
+            setupscript.SetLinesBoard();
+            if (LinesOptions != null) { LinesOptions.SetActive(true); }
         }
+        if (CircleBoardToggle && CircleBoardToggle.isOn)
+        {
+            setupscript.SetCircleBoard();
+            if (CircleOptions != null) { CircleOptions.SetActive(true); }
+        }
+        if (SpiralBoardToggle && SpiralBoardToggle.isOn)
+        {
+            setupscript.SetSpiralBoard();
+            if (SpiralOptions != null) { SpiralOptions.SetActive(true); }
+        }
+        setupscript.initializeBoard();
+    }
+
+    // ------------------Lines change events------------------
+
+    public void ChangeBoardLinesViaSliders()
+    {
+        BoardSetupScript setupscript = SetupObject.GetComponents<BoardSetupScript>()[0];
+
+        if (setupscript == null || shouldIgnoreOnChanged) { return; }
+        if (lineRowsSlider != null && lineRowsText != null)
+        {
+            setupscript.SetLineRows((int)lineRowsSlider.value);
+            lineRowsText.text = lineRowsSlider.value.ToString();
+        }
+        if (lineColsSlider != null && lineColsText != null)
+        {
+            setupscript.SetLineCols((int)lineColsSlider.value);
+            lineColsText.text = lineColsSlider.value.ToString();
+        }
+        if (lineAltToggle != null)
+        {
+            setupscript.SetLineAlt(lineAltToggle.isOn);
+        }
+        setupscript.initializeBoard();
+    }
+    
+    public void ChangeBoardLinesViaText()
+    {
+        BoardSetupScript setupscript = SetupObject.GetComponents<BoardSetupScript>()[0];
+
+        if (setupscript == null || shouldIgnoreOnChanged) { return; }
+        if (lineRowsSlider != null && lineRowsText != null)
+        {
+            setupscript.SetLineRows(Convert.ToInt32(lineRowsText.text));
+            lineRowsSlider.value = Convert.ToInt32(lineRowsText.text);
+        }
+        if (lineColsSlider != null && lineColsText != null)
+        {
+            setupscript.SetLineCols(Convert.ToInt32(lineColsText.text));
+            lineColsSlider.value = Convert.ToInt32(lineColsText.text);
+        }
+        setupscript.initializeBoard();
+    }
+
+    // ------------------Circle change events------------------
+
+    public void ChangeBoardCircleViaSliders()
+    {
+        BoardSetupScript setupscript = SetupObject.GetComponents<BoardSetupScript>()[0];
+
+        if (setupscript == null || shouldIgnoreOnChanged) { return; }
+        if (cirRingsSlider != null && cirRingsText != null)
+        {
+            setupscript.SetCirRings((int)cirRingsSlider.value);
+            cirRingsText.text = cirRingsSlider.value.ToString();
+        }
+        if (cirOffsetSlider != null && cirOffsetText != null)
+        {
+            setupscript.SetCirOffset(cirOffsetSlider.value);
+            cirOffsetText.text = cirOffsetSlider.value.ToString();
+        }
+        if (cirDensitySlider != null && cirDensityText != null)
+        {
+            setupscript.SetCirRingDensity((int)cirDensitySlider.value);
+            cirDensityText.text = cirDensitySlider.value.ToString();
+        }
+        setupscript.initializeBoard();
+    }
+
+    public void ChangeBoadCircleViaText()
+    {
+        BoardSetupScript setupscript = SetupObject.GetComponents<BoardSetupScript>()[0];
+
+        if (setupscript == null || shouldIgnoreOnChanged) { return; }
+        if (cirRingsSlider != null && cirRingsText != null)
+        {
+            setupscript.SetCirRings(Convert.ToInt32(cirRingsText.text));
+            cirRingsSlider.value = Convert.ToInt32(cirRingsText.text);
+        }
+        if (cirOffsetSlider != null && cirOffsetText != null)
+        {
+            setupscript.SetCirOffset(float.Parse(cirOffsetText.text));
+            cirOffsetSlider.value = float.Parse(cirOffsetText.text);
+        }
+        if (cirDensitySlider != null && cirDensityText != null)
+        {
+            setupscript.SetCirRingDensity(Convert.ToInt32(cirDensityText.text));
+            cirDensitySlider.value = Convert.ToInt32(cirDensityText.text);
+        }
+        setupscript.initializeBoard();
+    }
+
+    // ------------------Spiral change events------------------
+
+    public void ChangeBoardSpiralViaSliders()
+    {
+        BoardSetupScript setupscript = SetupObject.GetComponents<BoardSetupScript>()[0];
+
+        if (setupscript == null || shouldIgnoreOnChanged) { return; }
+        if (spiArmsSlider != null && spiArmsText != null)
+        {
+            setupscript.SetSpiArms((int)spiArmsSlider.value);
+            spiArmsText.text = spiArmsSlider.value.ToString();
+        }
+        if (spiOffsetSlider != null && spiOffsetText != null)
+        {
+            setupscript.SetSpiOffset(spiOffsetSlider.value);
+            spiOffsetText.text = spiOffsetSlider.value.ToString();
+        }
+        if (spiDensitySlider != null && spiDensityText != null)
+        {
+            setupscript.SetSpiSteps((int)spiDensitySlider.value);
+            spiDensityText.text = spiDensitySlider.value.ToString();
+        }
+        setupscript.initializeBoard();
+    }
+
+    public void ChangeBoadSpiralViaText()
+    {
+        BoardSetupScript setupscript = SetupObject.GetComponents<BoardSetupScript>()[0];
+
+        if (setupscript == null || shouldIgnoreOnChanged) { return; }
+        if (spiArmsSlider != null && spiArmsText != null)
+        {
+            setupscript.SetSpiArms(Convert.ToInt32(spiArmsText.text));
+            spiArmsSlider.value = Convert.ToInt32(spiArmsText.text);
+        }
+        if (spiOffsetSlider != null && spiOffsetText != null)
+        {
+            setupscript.SetSpiOffset(float.Parse(spiOffsetText.text));
+            spiOffsetSlider.value = float.Parse(spiOffsetText.text);
+        }
+        if (spiDensitySlider != null && spiDensityText != null)
+        {
+            setupscript.SetSpiSteps(Convert.ToInt32(spiDensityText.text));
+            spiDensitySlider.value = Convert.ToInt32(spiDensityText.text);
+        }
+        setupscript.initializeBoard();
     }
 
 }
