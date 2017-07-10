@@ -26,6 +26,7 @@ public class BoardSetupScript : MonoBehaviour {
     public int cirRingDensity;
     public float cirOffset;
     public int cirRings;
+    public bool cirAltOffset;
 
     [Header("Spiral")]
     public int spiArms;
@@ -106,7 +107,15 @@ public class BoardSetupScript : MonoBehaviour {
                     }
                     else
                     {
-                        float angle = (float)j * ((Mathf.PI * 2.0f) / ((float)i * cirRingDensity)) + ((float)i * cirOffset);
+                        float angle = 0;
+                        if (cirAltOffset)
+                        {
+                            angle = (float)j * ((Mathf.PI * 2.0f) / ((float)i * cirRingDensity)) + ((float)(i%2) * cirOffset);
+                        }
+                        else
+                        {
+                            angle = (float)j * ((Mathf.PI * 2.0f) / ((float)i * cirRingDensity)) + ((float)i * cirOffset);
+                        }
                         float newX = Mathf.Cos((float)angle) * ((float)i * (maxArea / (cirRings - 1)));
                         float newY = Mathf.Sin((float)angle) * ((float)i * (maxArea / (cirRings - 1)));
                         if (i < cirRings || IsPointInRectangle(newX, newY, BoardMin, BoardMax))
@@ -137,6 +146,7 @@ public class BoardSetupScript : MonoBehaviour {
                     }
                     else
                     {
+
                         float angle = (float)j * ((Mathf.PI * 2.0f) / spiArms) + ((float)i * spiOffset);
                         float newX = Mathf.Cos((float)angle) * ((float)i * (maxArea / (spiSteps - 1)));
                         float newY = Mathf.Sin((float)angle) * ((float)i * (maxArea / (spiSteps - 1)));
@@ -229,6 +239,10 @@ public class BoardSetupScript : MonoBehaviour {
     public void SetCirRings(int newRings)
     {
         cirRings = newRings;
+    }
+    public void SetCirAltOffset(bool newAltOffset)
+    {
+        cirAltOffset = newAltOffset;
     }
 
 }

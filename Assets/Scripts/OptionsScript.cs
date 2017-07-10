@@ -3,38 +3,47 @@ using System;
 using System.Collections;
 using UnityEngine.UI;
 
-public class OptionsScript : MonoBehaviour {
+public class OptionsScript : MonoBehaviour
+{
 
-	[Header("Cam Positions")]
-	public Vector3 chatPos;
-	public Vector3 withoutChatPos;
-	public Vector3 viewPos;
-	public Vector3 upPos;
-	public Vector3 sidePos;
+    [Header("Cam Positions")]
+    public Vector3 chatPos;
+    public Vector3 withoutChatPos;
+    public Vector3 viewPos;
+    public Vector3 upPos;
+    public Vector3 sidePos;
 
-	[Header("Cam Rotations")]
-	public Vector3 normalRot;
-	public Vector3 upRot;
-	public Vector3 sideRot;
+    [Header("Cam Rotations")]
+    public Vector3 normalRot;
+    public Vector3 upRot;
+    public Vector3 sideRot;
 
-	[Header("screens")]
-	public GameObject optionsMenu;
-	public GameObject chatWindow;
-	public GameObject InstructionsStart;
-	public GameObject InstructionsPlay;
-	public GameObject InstructionsBot;
+    [Header("screens")]
+    public GameObject optionsMenu;
+    public GameObject chatWindow;
+    public GameObject InstructionsStart;
+    public GameObject InstructionsPlay;
+    public GameObject InstructionsBot;
     public GameObject OtherSettings;
 
-	[Header("Settings")]
-	public Toggle chatToggle;
-	public Toggle optionsButtonToggle;
-	public Image chromaImage;
-	public InputField chromaInput;
+    [Header("Settings")]
+    public Toggle chatToggle;
+    public Toggle optionsButtonToggle;
+    public Image chromaImage;
+    public InputField chromaInput;
 
     [Header("BoardOptionRadioButtons")]
     public Toggle LinesBoardToggle;
     public Toggle CircleBoardToggle;
     public Toggle SpiralBoardToggle;
+
+    [Header("PuckSettingsSliders")]
+    public GameObject puckPrefab;
+    public PhysicMaterial puckMaterial;
+    public Slider puckSizeSlider;
+    public Slider puckBounceSlider;
+    public Slider puckFrictionSlider;
+    public InputField puckSizeText;
 
     [Header("LinesBoardSliders")]
     public GameObject LinesOptions;
@@ -61,30 +70,32 @@ public class OptionsScript : MonoBehaviour {
     public InputField cirRingsText;
     public InputField cirOffsetText;
     public InputField cirDensityText;
+    public Toggle cirAltOffsetToggle;
 
     [Header("objects")]
     public GameObject SetupObject;
-	public GameObject optionsButton;
-	public GameObject launcher;
-	public Camera cam;
+    public GameObject optionsButton;
+    public GameObject launcher;
+    public Camera cam;
 
-	private bool optionsButtonActive;
-	private bool chatActive;
+    private bool optionsButtonActive;
+    private bool chatActive;
     private bool shouldIgnoreOnChanged = false;
 
 
-	// Use this for initialization
-	void Start () {
-		CloseMenu(); //in case it's already open
+    // Use this for initialization
+    void Start()
+    {
+        CloseMenu(); //in case it's already open
         HideOtherOptionsScreens();
 
-		ShowMenu();
-		ToggleChat();
-		ToggleOptions();
-		cam.transform.position = chatPos;
-		cam.transform.rotation = Quaternion.Euler(normalRot);
-		cam.clearFlags = CameraClearFlags.Color;
-		cam.backgroundColor = Color.black;
+        ShowMenu();
+        ToggleChat();
+        ToggleOptions();
+        cam.transform.position = chatPos;
+        cam.transform.rotation = Quaternion.Euler(normalRot);
+        cam.clearFlags = CameraClearFlags.Color;
+        cam.backgroundColor = Color.black;
 
 
 
@@ -108,21 +119,21 @@ public class OptionsScript : MonoBehaviour {
             }
 
             // lines
-            if(lineRowsSlider != null && lineRowsText != null)
+            if (lineRowsSlider != null && lineRowsText != null)
             {
                 lineRowsSlider.value = setupscript.numRows;
                 lineRowsText.text = setupscript.numRows.ToString();
             }
-            if(lineColsSlider != null && lineColsText != null)
+            if (lineColsSlider != null && lineColsText != null)
             {
                 lineColsSlider.value = setupscript.numCols;
                 lineColsText.text = setupscript.numCols.ToString();
             }
-            if(lineAltToggle != null)
+            if (lineAltToggle != null)
             {
                 lineAltToggle.isOn = setupscript.alternatePegs;
             }
-            
+
             // spiral
             if (spiArmsSlider != null && spiArmsText != null)
             {
@@ -156,289 +167,304 @@ public class OptionsScript : MonoBehaviour {
                 cirDensitySlider.value = setupscript.cirRingDensity;
                 cirDensityText.text = setupscript.cirRingDensity.ToString();
             }
+            if (cirAltOffsetToggle != null)
+            {
+                cirAltOffsetToggle.isOn = setupscript.cirAltOffset;
+            }
+
+            //puck and pegs
+            if (puckSizeSlider != null && puckSizeText != null && puckPrefab != null)
+            {
+                puckSizeSlider.value = puckPrefab.transform.localScale.x;
+                puckSizeText.text = puckSizeSlider.value.ToString();
+
+            }
+
+
             shouldIgnoreOnChanged = false;
             ChangeBoardType();
         }
     }
-	
-	// Update is called once per frame
-	void Update () {
-		if(Input.GetAxis("ChatCam")>0)
-		{
-			if(chatActive)
-			{
-				cam.transform.position = chatPos;
-			}
-			else
-			{
-				cam.transform.position = withoutChatPos;
-			}
 
-			cam.transform.rotation = Quaternion.Euler(normalRot);
-			SetChat(true);
-			ViewLauncher(true);
-			cam.clearFlags = CameraClearFlags.Color;
-			cam.backgroundColor = Color.black;
+    // Update is called once per frame
+    void Update()
+    {
+        if (Input.GetAxis("ChatCam") > 0)
+        {
+            if (chatActive)
+            {
+                cam.transform.position = chatPos;
+            }
+            else
+            {
+                cam.transform.position = withoutChatPos;
+            }
 
-		}
-		else if(Input.GetAxis("ViewCam")>0)
-		{
-			cam.transform.position = viewPos;
-			cam.transform.rotation = Quaternion.Euler(normalRot);
-			SetChat(false);
-			ViewLauncher(true);
-			cam.clearFlags = CameraClearFlags.Color;
-			cam.backgroundColor = Color.black;
-		}
-		else if(Input.GetAxis("SideCam")>0)
-		{
-			cam.transform.position = sidePos;
-			cam.transform.rotation = Quaternion.Euler(sideRot);
-			SetChat(false);
-			ViewLauncher(true);
-			cam.clearFlags = CameraClearFlags.Color;
-			cam.backgroundColor = Color.black;
-		}
-		else if(Input.GetAxis("UpCam")>0)
-		{
-			cam.transform.position = upPos;
-			cam.transform.rotation = Quaternion.Euler(upRot);
-			SetChat(false);
-			ViewLauncher(false);
-			cam.clearFlags = CameraClearFlags.Color;
-			cam.backgroundColor = Color.black;
-		}
+            cam.transform.rotation = Quaternion.Euler(normalRot);
+            SetChat(true);
+            ViewLauncher(true);
+            cam.clearFlags = CameraClearFlags.Color;
+            cam.backgroundColor = Color.black;
 
-		if(Input.GetAxis("OpenMenu")>0)
-		{
-			ShowMenu();
-		}
-	}
+        }
+        else if (Input.GetAxis("ViewCam") > 0)
+        {
+            cam.transform.position = viewPos;
+            cam.transform.rotation = Quaternion.Euler(normalRot);
+            SetChat(false);
+            ViewLauncher(true);
+            cam.clearFlags = CameraClearFlags.Color;
+            cam.backgroundColor = Color.black;
+        }
+        else if (Input.GetAxis("SideCam") > 0)
+        {
+            cam.transform.position = sidePos;
+            cam.transform.rotation = Quaternion.Euler(sideRot);
+            SetChat(false);
+            ViewLauncher(true);
+            cam.clearFlags = CameraClearFlags.Color;
+            cam.backgroundColor = Color.black;
+        }
+        else if (Input.GetAxis("UpCam") > 0)
+        {
+            cam.transform.position = upPos;
+            cam.transform.rotation = Quaternion.Euler(upRot);
+            SetChat(false);
+            ViewLauncher(false);
+            cam.clearFlags = CameraClearFlags.Color;
+            cam.backgroundColor = Color.black;
+        }
 
-	void ShowMenu()
-	{
-		HideChat();
-		HideOptions();
-		ShowLauncher (false);
+        if (Input.GetAxis("OpenMenu") > 0)
+        {
+            ShowMenu();
+        }
+    }
 
-		//do last to make sure options and chat are hidden
-		if(optionsMenu != null)
-		{
-			optionsMenu.SetActive(true);
-		}
-	}
+    void ShowMenu()
+    {
+        HideChat();
+        HideOptions();
+        ShowLauncher(false);
 
-	void CloseMenu()
-	{
-		if(optionsMenu != null)
-		{
-			optionsMenu.SetActive(false);
-		}
-		SetChat(chatActive);
-		SetOptionsButton(optionsButtonActive);
-		ShowLauncher (true);
-	}
+        //do last to make sure options and chat are hidden
+        if (optionsMenu != null)
+        {
+            optionsMenu.SetActive(true);
+        }
+    }
 
-	//
-	//variable menu toggles
-	//
+    void CloseMenu()
+    {
+        if (optionsMenu != null)
+        {
+            optionsMenu.SetActive(false);
+        }
+        SetChat(chatActive);
+        SetOptionsButton(optionsButtonActive);
+        ShowLauncher(true);
+    }
 
-	void SetOptionsButton(bool setTo)
-	{
-		if(optionsButton != null && optionsButtonToggle != null)
-		{
-			if(!optionsMenu.activeSelf)
-			{
-				optionsButton.SetActive(setTo);
-				optionsButtonToggle.isOn = setTo;
-			}
-			if(optionsMenu.activeSelf)
-			{
-				optionsButtonToggle.isOn = setTo;
-			}
-		}
-	}
+    //
+    //variable menu toggles
+    //
 
-	void ToggleOptions()
-	{
-		SetOptionsButton(!optionsButtonActive);
-	}
+    void SetOptionsButton(bool setTo)
+    {
+        if (optionsButton != null && optionsButtonToggle != null)
+        {
+            if (!optionsMenu.activeSelf)
+            {
+                optionsButton.SetActive(setTo);
+                optionsButtonToggle.isOn = setTo;
+            }
+            if (optionsMenu.activeSelf)
+            {
+                optionsButtonToggle.isOn = setTo;
+            }
+        }
+    }
 
-	void ChangeOptions()
-	{
-		if(optionsButton != null)
-		{
-			optionsButtonActive = optionsButtonToggle.isOn;
-		}
-	}
+    void ToggleOptions()
+    {
+        SetOptionsButton(!optionsButtonActive);
+    }
 
-	void HideOptions()
-	{
-		if(optionsButton != null)
-		{
-			optionsButton.SetActive(false);
-		}
-	}
+    void ChangeOptions()
+    {
+        if (optionsButton != null)
+        {
+            optionsButtonActive = optionsButtonToggle.isOn;
+        }
+    }
 
-	void SetChat(bool setActive)
-	{
-		if(chatWindow != null && chatToggle != null)
-		{
-			if(!optionsMenu.activeSelf)
-			{
-				chatWindow.SetActive(setActive);
-				chatToggle.isOn = setActive;
-			}
-			if(optionsMenu.activeSelf)
-			{
-				chatToggle.isOn = setActive;
-			}
-		}
-	}
+    void HideOptions()
+    {
+        if (optionsButton != null)
+        {
+            optionsButton.SetActive(false);
+        }
+    }
 
-	void ToggleChat()
-	{
-		SetChat(!chatActive);
-	}
+    void SetChat(bool setActive)
+    {
+        if (chatWindow != null && chatToggle != null)
+        {
+            if (!optionsMenu.activeSelf)
+            {
+                chatWindow.SetActive(setActive);
+                chatToggle.isOn = setActive;
+            }
+            if (optionsMenu.activeSelf)
+            {
+                chatToggle.isOn = setActive;
+            }
+        }
+    }
 
-	void ChangeChat()
-	{
-		if(chatWindow != null)
-		{
-			chatActive = chatToggle.isOn;
-		}
+    void ToggleChat()
+    {
+        SetChat(!chatActive);
+    }
 
-		if(cam.transform.position == chatPos)
-		{
-			if(!chatActive)
-			{
-				cam.transform.position = withoutChatPos;
-			}
-		}
-		else if(cam.transform.position == withoutChatPos)
-		{
-			if(chatActive)
-			{
-				cam.transform.position = chatPos;
-			}
-		}
-	}
+    void ChangeChat()
+    {
+        if (chatWindow != null)
+        {
+            chatActive = chatToggle.isOn;
+        }
 
-	void HideChat()
-	{
-		if(chatWindow != null)
-		{
-			chatWindow.SetActive(false);
-		}
-	}
+        if (cam.transform.position == chatPos)
+        {
+            if (!chatActive)
+            {
+                cam.transform.position = withoutChatPos;
+            }
+        }
+        else if (cam.transform.position == withoutChatPos)
+        {
+            if (chatActive)
+            {
+                cam.transform.position = chatPos;
+            }
+        }
+    }
 
-	void ViewLauncher(bool setAcitve)
-	{
-		if(launcher != null)
-		{
-			launcher.GetComponent<MeshRenderer>().enabled = setAcitve;
-		}
-	}
+    void HideChat()
+    {
+        if (chatWindow != null)
+        {
+            chatWindow.SetActive(false);
+        }
+    }
 
-	void ShowLauncher(bool setActive)
-	{
-		if (launcher != null) 
-		{
-			launcher.SetActive (setActive);
-		}
-	}
+    void ViewLauncher(bool setAcitve)
+    {
+        if (launcher != null)
+        {
+            launcher.GetComponent<MeshRenderer>().enabled = setAcitve;
+        }
+    }
 
-	//
-	//instruction screens
-	//
+    void ShowLauncher(bool setActive)
+    {
+        if (launcher != null)
+        {
+            launcher.SetActive(setActive);
+        }
+    }
 
-	void HideMenu(bool shouldHide)
-	{
-		if(optionsMenu != null)
-		{
-			optionsMenu.SetActive(!shouldHide);
-		}
-	}
+    //
+    //instruction screens
+    //
 
-	void ViewStart()
-	{
-		HideMenu (true);
-		if (InstructionsStart != null) 
-		{
-			InstructionsStart.SetActive (true);
-		}
-	}
+    void HideMenu(bool shouldHide)
+    {
+        if (optionsMenu != null)
+        {
+            optionsMenu.SetActive(!shouldHide);
+        }
+    }
 
-	void ViewPlay()
-	{
-		HideMenu (true);
-		if (InstructionsPlay != null) 
-		{
-			InstructionsPlay.SetActive (true);
-		}
-	}
+    void ViewStart()
+    {
+        HideMenu(true);
+        if (InstructionsStart != null)
+        {
+            InstructionsStart.SetActive(true);
+        }
+    }
 
-	void ViewBot()
-	{
-		HideMenu (true);
-		if (InstructionsBot != null) 
-		{
-			InstructionsBot.SetActive (true);
-		}
-	}
+    void ViewPlay()
+    {
+        HideMenu(true);
+        if (InstructionsPlay != null)
+        {
+            InstructionsPlay.SetActive(true);
+        }
+    }
+
+    void ViewBot()
+    {
+        HideMenu(true);
+        if (InstructionsBot != null)
+        {
+            InstructionsBot.SetActive(true);
+        }
+    }
 
     void ViewOtherSettings()
     {
         HideMenu(true);
-        if(OtherSettings != null)
+        if (OtherSettings != null)
         {
             OtherSettings.SetActive(true);
         }
     }
 
-	void HideInstructionsFromOptions()
-	{
+    void HideInstructionsFromOptions()
+    {
         HideOtherOptionsScreens();
-		HideMenu (false);
-	}
+        HideMenu(false);
+    }
 
-	void HideOtherOptionsScreens()
-	{
-		if (InstructionsStart != null) 
-		{
-			InstructionsStart.SetActive (false);
-		}
-		if (InstructionsPlay != null) 
-		{
-			InstructionsPlay.SetActive (false);
-		}
-		if (InstructionsBot != null) 
-		{
-			InstructionsBot.SetActive (false);
-		}
+    void HideOtherOptionsScreens()
+    {
+        if (InstructionsStart != null)
+        {
+            InstructionsStart.SetActive(false);
+        }
+        if (InstructionsPlay != null)
+        {
+            InstructionsPlay.SetActive(false);
+        }
+        if (InstructionsBot != null)
+        {
+            InstructionsBot.SetActive(false);
+        }
         if (OtherSettings != null)
         {
             OtherSettings.SetActive(false);
         }
-	}
+    }
 
-	void ChangeChroma()
-	{
-		Color newColor = Color.clear;
-		if(chromaInput.text != "")
-		{
-			newColor = ColorPicker.pickColor(chromaInput.text);
+    void ChangeChroma()
+    {
+        Color newColor = Color.clear;
+        if (chromaInput.text != "")
+        {
+            newColor = ColorPicker.pickColor(chromaInput.text);
 
-		}
-		if(newColor == Color.clear)
-		{
-			newColor = Color.black;
-		}
+        }
+        if (newColor == Color.clear)
+        {
+            newColor = Color.black;
+        }
 
-		chromaImage.color = newColor;
-		cam.backgroundColor = newColor;
+        chromaImage.color = newColor;
+        cam.backgroundColor = newColor;
 
-	}
+    }
 
     void ChangeBoardType(bool drawAsCircle, bool drawAsSprial)
     {
@@ -497,7 +523,7 @@ public class OptionsScript : MonoBehaviour {
         }
         setupscript.initializeBoard();
     }
-    
+
     public void ChangeBoardLinesViaText()
     {
         BoardSetupScript setupscript = SetupObject.GetComponents<BoardSetupScript>()[0];
@@ -537,6 +563,10 @@ public class OptionsScript : MonoBehaviour {
         {
             setupscript.SetCirRingDensity((int)cirDensitySlider.value);
             cirDensityText.text = cirDensitySlider.value.ToString();
+        }
+        if (cirAltOffsetToggle != null)
+        {
+            setupscript.SetCirAltOffset(cirAltOffsetToggle.isOn);
         }
         setupscript.initializeBoard();
     }
@@ -610,6 +640,23 @@ public class OptionsScript : MonoBehaviour {
             spiDensitySlider.value = Convert.ToInt32(spiDensityText.text);
         }
         setupscript.initializeBoard();
+    }
+
+    // ------------------Puck and Pegs change events------------------
+    public void ChangePuckViaSliders()
+    {
+
+        if (shouldIgnoreOnChanged) { return; }
+        if (puckSizeSlider != null && puckSizeText != null && puckPrefab != null)
+        {
+            puckSizeText.text = puckSizeSlider.value.ToString();
+            puckPrefab.transform.localScale = new Vector3(puckSizeSlider.value, puckPrefab.transform.localScale.y, puckSizeSlider.value);
+        }
+    }
+
+    public void ChangePuckViaText()
+    {
+        if (shouldIgnoreOnChanged) { return; }
     }
 
 }
