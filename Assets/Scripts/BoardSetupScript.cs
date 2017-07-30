@@ -85,6 +85,8 @@ public class BoardSetupScript : MonoBehaviour {
         float yBoardMin = (yBoardSize * -1) + yPadding;
         float yBoardMax = yBoardSize - yPadding;
 
+        BoardSize = new Vector2(xBoardMax-xBoardMin, yBoardMax-yBoardMin);
+
         if (!board || !pegs) { return; }
         foreach (Transform t in board.transform) { Destroy(t.gameObject); }
         foreach (Transform t in pegs.transform) { Destroy(t.gameObject); }

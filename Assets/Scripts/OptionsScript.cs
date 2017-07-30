@@ -216,6 +216,7 @@ public class OptionsScript : MonoBehaviour
             cam.clearFlags = CameraClearFlags.Color;
             cam.backgroundColor = Color.black;
         }
+        /*
         else if (Input.GetAxis("SideCam") > 0)
         {
             cam.transform.position = sidePos;
@@ -234,6 +235,7 @@ public class OptionsScript : MonoBehaviour
             cam.clearFlags = CameraClearFlags.Color;
             cam.backgroundColor = Color.black;
         }
+        */
 
         if (Input.GetAxis("OpenMenu") > 0)
         {
